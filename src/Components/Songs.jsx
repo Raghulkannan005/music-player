@@ -1,237 +1,308 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Form, InputGroup } from 'react-bootstrap';
-import { FaHeart, FaRegHeart, FaSearch } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import './sidebar.css'
+import { Form, InputGroup, Button, Toast } from 'react-bootstrap';
+import { IoSearchOutline, IoMusicalNotesOutline } from 'react-icons/io5';
+import { FaPlay, FaStop, FaPlus, FaHeart, FaPause } from 'react-icons/fa';
+import './Songs.css';
 
-function Songs() {
-  const [items, setItems] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
-  const [playlist, setPlaylist] = useState([]);  
-  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+const Songs = ({ onPlaySong, currentSong, isPlaying }) => {
+  const [songs, setSongs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [category, setCategory] = useState('all');
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [activeSong, setActiveSong] = useState(null);
+  const [localAudio, setLocalAudio] = useState(null);
+  
+  // Fetch songs from db.json
   useEffect(() => {
-    // Fetch all items
     axios.get('http://localhost:3000/items')
-      .then(response => setItems(response.data))
-      .catch(error => console.error('Error fetching items: ', error));
-
-  // Fetch favorities items
-      axios.get('http://localhost:3000/favorities')
-      .then(response => setWishlist(response.data))
+      .then(response => {
+        setSongs(response.data);
+        setLoading(false);
+      })
       .catch(error => {
-        console.error('Error fetching Favvorities:', error);
-        // Initialize wishlist as an empty array in case of an error
-        setWishlist([]);
+        console.error('Error fetching songs:', error);
+        setLoading(false);
       });
+  }, []);
+
+  // Clean up audio on unmount
+  useEffect(() => {
+    return () => {
+      if (localAudio) {
+        localAudio.pause();
+        localAudio.currentTime = 0;
+      }
+    };
+  }, [localAudio]);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleCategoryChange = (e) => {
+    setCategory(e.target.value);
+  };
+
+  const playSong = (song) => {
+    // Stop any currently playing audio
+    if (localAudio) {
+      localAudio.pause();
+    }
+    
+    // Create a new audio element and play
+    const audio = new Audio(song.songUrl);
+    setLocalAudio(audio);
+    setActiveSong(song);
+    
+    // Add event listeners
+    audio.addEventListener('ended', () => {
+      setActiveSong(null);
+    });
+    
+    audio.play().catch(err => {
+      console.error('Error playing audio:', err);
+      showToastNotification('Unable to play audio. Please check the file path.');
+    });
+    
+    // Update parent component if using global playback
+    if (onPlaySong) {
+      onPlaySong(song, audio);
+    }
+  };
   
-    // Fetch playlist items
-    axios.get('http://localhost:3000/playlist')
-      .then(response => setPlaylist(response.data))
-      .catch(error => {
-        console.error('Error fetching playlist: ', error);
-        // Initialize playlist as an empty array in case of an error
-        setPlaylist([]);
-      });
-      // Function to handle audio play
-    const handleAudioPlay = (itemId, audioElement) => {
-        if (currentlyPlaying && currentlyPlaying !== audioElement) {
-          currentlyPlaying.pause(); // Pause the currently playing audio
-        }
-        setCurrentlyPlaying(audioElement); // Update the currently playing audio
-       
+  const pauseSong = () => {
+    if (localAudio) {
+      localAudio.pause();
+      setActiveSong(null);
+    }
+  };
+
+  const stopSong = () => {
+    if (localAudio) {
+      localAudio.pause();
+      localAudio.currentTime = 0;
+      setActiveSong(null);
+    }
+  };
+
+  const addToPlaylist = async (song) => {
+    try {
+      // Check if song is already in playlist
+      const playlistResponse = await axios.get('http://localhost:3000/playlist');
+      const existingItem = playlistResponse.data.find(item => item.itemId === song.id);
+      
+      if (existingItem) {
+        showToastNotification('This song is already in your playlist');
+        return;
+      }
+      
+      // Add to playlist
+      const playlistItem = {
+        itemId: song.id,
+        title: song.title,
+        imgUrl: song.imgUrl,
+        genre: song.genre,
+        songUrl: song.songUrl,
+        singer: song.singer
       };
-  
-      // Event listener to handle audio play
-      const handlePlay = (itemId, audioElement) => {
-        audioElement.addEventListener('play', () => {
-          handleAudioPlay(itemId, audioElement);
-        });
+      
+      await axios.post('http://localhost:3000/playlist', playlistItem);
+      showToastNotification('Added to playlist successfully');
+    } catch (error) {
+      console.error('Error adding to playlist:', error);
+      showToastNotification('Failed to add to playlist');
+    }
+  };
+
+  const addToFavorites = async (song) => {
+    try {
+      // Check if song is already in favorites
+      const favoritesResponse = await axios.get('http://localhost:3000/favorities');
+      const existingItem = favoritesResponse.data.find(item => item.itemId === song.id);
+      
+      if (existingItem) {
+        showToastNotification('This song is already in your favorites');
+        return;
+      }
+      
+      // Add to favorites
+      const favoriteItem = {
+        itemId: song.id,
+        title: song.title,
+        imgUrl: song.imgUrl,
+        genre: song.genre,
+        songUrl: song.songUrl,
+        singer: song.singer
       };
-  
-      // Add event listeners for each audio element
-      items.forEach((item) => {
-        const audioElement = document.getElementById(`audio-${item.id}`);
-        if (audioElement) {
-          handlePlay(item.id, audioElement);
-        }
-      });
-  
-      // Cleanup event listeners
-      return () => {
-        items.forEach((item) => {
-          const audioElement = document.getElementById(`audio-${item.id}`);
-          if (audioElement) {
-            audioElement.removeEventListener('play', () => handleAudioPlay(item.id, audioElement));
-          }
-        });
-      };
-  }, [items,currentlyPlaying, searchTerm]);
-  
-
-  const addToWishlist = async (itemId) => {
-    try {
-      const selectedItem = items.find((item) => item.id === itemId);
-      if (!selectedItem) {
-        throw new Error('Selected item not found');
-      }
-      const { title, imgUrl, genre, songUrl, singer, id: itemId2 } = selectedItem;
-      await axios.post('http://localhost:3000/favorities', { itemId: itemId2, title, imgUrl, genre, songUrl, singer });
-      const response = await axios.get('http://localhost:3000/favorities');
-      setWishlist(response.data);
+      
+      await axios.post('http://localhost:3000/favorities', favoriteItem);
+      showToastNotification('Added to favorites successfully');
     } catch (error) {
-      console.error('Error adding item to wishlist: ', error);
+      console.error('Error adding to favorites:', error);
+      showToastNotification('Failed to add to favorites');
     }
   };
 
-  const removeFromWishlist = async (itemId) => {
-    try {
-      // Find the item in the wishlist by itemId
-      const selectedItem = wishlist.find((item) => item.itemId === itemId);
-      if (!selectedItem) {
-        throw new Error('Selected item not found in wishlist');
-      }
-      // Make a DELETE request to remove the item from the wishlist
-      await axios.delete(`http://localhost:3000/favorities/${selectedItem.id}`);
-      // Refresh the wishlist items
-      const response = await axios.get('http://localhost:3000/favorities');
-      setWishlist(response.data);
-    } catch (error) {
-      console.error('Error removing item from wishlist: ', error);
-    }
-  };
-  
-  const isItemInWishlist = (itemId) => {
-    return wishlist.some((item) => item.itemId === itemId);
+  const showToastNotification = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
-  
-  const addToPlaylist = async (itemId) => {
-    try {
-      const selectedItem = items.find((item) => item.id === itemId);
-      if (!selectedItem) {
-        throw new Error('Selected item not found');
-      }
-      const { title, imgUrl, genre, songUrl, singer, id: itemId2 } = selectedItem;
-      await axios.post('http://localhost:3000/playlist', { itemId: itemId2, title, imgUrl, genre, songUrl, singer });
-      const response = await axios.get('http://localhost:3000/playlist');
-      setPlaylist(response.data);
-    } catch (error) {
-      console.error('Error adding item to wishlist: ', error);
-    }
-  };
-
-  const removeFromPlaylist = async (itemId) => {
-    try {
-      // Find the item in the wishlist by itemId
-      const selectedItem = playlist.find((item) => item.itemId === itemId);
-      if (!selectedItem) {
-        throw new Error('Selected item not found in wishlist');
-      }
-      // Make a DELETE request to remove the item from the wishlist
-      await axios.delete(`http://localhost:3000/playlist/${selectedItem.id}`);
-      // Refresh the wishlist items
-      const response = await axios.get('http://localhost:3000/playlist');
-      setPlaylist(response.data);
-    } catch (error) {
-      console.error('Error removing item from wishlist: ', error);
-    }
-  };
-  
-  const isItemInPlaylist = (itemId) => {
-    return playlist.some((item) => item.itemId === itemId);
-  };
-
-
-  const filteredItems = items.filter((item) => {
-    const lowerCaseQuery = searchTerm.toLowerCase();
-    return (
-      item.title.toLowerCase().includes(lowerCaseQuery) ||
-      item.singer.toLowerCase().includes(lowerCaseQuery) ||
-      item.genre.toLowerCase().includes(lowerCaseQuery)
-    );
+  const filteredSongs = songs.filter((song) => {
+    const matchesSearch = song.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         song.singer?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = category === 'all' || song.genre?.toLowerCase() === category.toLowerCase();
+    
+    return matchesSearch && matchesCategory;
   });
 
+  return (
+    <div className="songs-page-container">
+      <div className="tamil-decoration"></div>
+      <header className="songs-header">
+        <h1 className="page-title">Rhythmic Tunes</h1>
+        <div className="search-filter-container">
+          <div className="search-bar">
+            <InputGroup>
+              <InputGroup.Text className="search-icon">
+                <IoSearchOutline />
+              </InputGroup.Text>
+              <Form.Control
+                className="search-input"
+                placeholder="Search for songs or artists..."
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </InputGroup>
+          </div>
+          
+          <Form.Select 
+            className="category-filter" 
+            value={category}
+            onChange={handleCategoryChange}
+          >
+            <option value="all">All Categories</option>
+            <option value="romantic">Romantic</option>
+            <option value="emotional">Emotional</option>
+          </Form.Select>
+        </div>
+      </header>
 
-    return (
-      <div style={{display:"flex", justifyContent:"flex-end"}}>
-      <div className="songs-container" style={{width:"1300px"}}>
-        <div className="container mx-auto p-3">
-          <h2 className="text-3xl font-semibold mb-4 text-center">Songs List</h2>
-          <InputGroup className="mb-3">
-            <InputGroup.Text id="search-icon">
-              <FaSearch />
-            </InputGroup.Text>
-            <Form.Control
-              type="search"
-              placeholder="Search by singer, genre, or song name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </InputGroup>
-          <br />
-          <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
-            {filteredItems.map((item, index) => (
-              <div key={item.id} className="col">
-                <div className="card h-100">
-                  <img
-                    src={item.imgUrl}
-                    alt="Item Image"
-                    className="card-img-top rounded-top"
-                    style={{ height: '200px', width: '100%' }}
-                  />
-                  <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <h5 className="card-title">{item.title}</h5>
-                      {isItemInWishlist(item.id) ? (
-                        <Button
-                          variant="light"
-                          onClick={() => removeFromWishlist(item.id)}
+      {activeSong && (
+        <div className="now-playing-indicator">
+          <div className="now-playing-info">
+            <img src={activeSong.imgUrl} alt={activeSong.title} className="mini-album-art" />
+            <div>
+              <p className="now-playing-text">Now Playing:</p>
+              <h4 className="now-playing-title">{activeSong.title}</h4>
+              <p className="now-playing-artist">{activeSong.singer}</p>
+            </div>
+          </div>
+          <div className="now-playing-controls">
+            <Button variant="danger" className="control-button stop-button" onClick={stopSong}>
+              <FaStop />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+        </div>
+      ) : (
+        <div className="songs-grid">
+          {filteredSongs.map((song) => (
+            <div 
+              className={`song-card ${activeSong && activeSong.id === song.id ? 'active-song' : ''}`} 
+              key={song.id}
+            >
+              <div className="song-image-container">
+                <img src={song.imgUrl} alt={song.title} className="song-image" />
+                <div className="song-overlay">
+                  {activeSong && activeSong.id === song.id ? (
+                    <button onClick={stopSong} className="play-overlay-btn stop">
+                      <FaStop size={24} />
+                    </button>
+                  ) : (
+                    <button onClick={() => playSong(song)} className="play-overlay-btn">
+                      <FaPlay size={24} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="song-info">
+                <h3 className="song-title">{song.title}</h3>
+                <p className="song-artist">{song.singer}</p>
+                <p className="song-genre">
+                  <IoMusicalNotesOutline /> {song.genre}
+                </p>
+                <div className="song-actions">
+                  <div className="action-buttons">
+                    {activeSong && activeSong.id === song.id ? (
+                      <>
+                        <Button 
+                          className="action-btn control-btn" 
+                          variant="danger"
+                          onClick={pauseSong}
                         >
-                          <FaHeart color="red" />
+                          <FaPause /> Pause
                         </Button>
-                      ) : (
-                        <Button
-                          variant="light"
-                          onClick={() => addToWishlist(item.id)}
+                        <Button 
+                          className="action-btn control-btn"
+                          variant="dark" 
+                          onClick={stopSong}
                         >
-                          <FaRegHeart color="black" />
+                          <FaStop /> Stop
                         </Button>
-                      )}
-                    </div>
-                    <p className="card-text">Genre: {item.genre}</p>
-                    <p className="card-text">Singer: {item.singer}</p>
-                    <audio controls className="w-100" id={`audio-${item.id}`} >
-                      <source src={item.songUrl} />
-                    </audio>
-                  </div>
-                  <div className="card-footer d-flex justify-content-center">
-                    {isItemInPlaylist(item.id) ? (
-                      <Button
-                        variant="outline-secondary"
-                        onClick={() => removeFromPlaylist(item.id)}
-                      >
-                        Remove From Playlist
-                      </Button>
+                      </>
                     ) : (
-                      <Button
-                        variant="outline-primary"
-                        onClick={() => addToPlaylist(item.id)}
+                      <Button 
+                        className="action-btn" 
+                        onClick={() => addToPlaylist(song)}
                       >
-                        Add to Playlist
+                        <FaPlus /> Add to Playlist
                       </Button>
                     )}
+                    <Button 
+                      className="action-btn favorite-btn" 
+                      onClick={() => addToFavorites(song)}
+                    >
+                      <FaHeart />
+                    </Button>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      </div>
-      </div>
-    );
-  }
+      )}
+
+      <Toast
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        style={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          minWidth: '250px',
+          zIndex: 9999
+        }}
+        bg="dark"
+        delay={3000}
+        autohide
+      >
+        <Toast.Header closeButton={true}>
+          <strong className="me-auto">Notification</strong>
+        </Toast.Header>
+        <Toast.Body className="text-white">{toastMessage}</Toast.Body>
+      </Toast>
+    </div>
+  );
+};
 
 export default Songs;

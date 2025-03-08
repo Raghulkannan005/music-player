@@ -1,21 +1,14 @@
-import React from 'react'
 import Unavbar from './Unavbar'
 import "./uhome.css"
-import { Button, Card } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
+import { Card } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import Footer from '../Componenets/Footer'
 
 
 const Uhome = () => {
-  const navigate=useNavigate()
-  const  products=()=>{
- navigate('/songs')
-  }
   return (
     <div>
       <Unavbar/>
-      
       <div>
       <h1 className='text-center' style={{fontSize:"50px"}}>Best Seller</h1>
       <div  style={{display:"flex",justifyContent:"center"}}>

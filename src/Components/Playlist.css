@@ -1,0 +1,267 @@
+/* Modern Playlist Styling */
+.playlist-container {
+  background: #121212;
+  color: #F5F5F5;
+  padding-top: 2rem;
+}
+
+.main-card {
+  background: #1E1E1E;
+  border: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+.playlist-header {
+  background: linear-gradient(90deg, #1E1E1E, #2D2D2D);
+  border-bottom: 1px solid #333 !important;
+}
+
+.playlist-header h2 {
+  color: #FFD700;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.track-count {
+  background: rgba(255, 255, 255, 0.1) !important;
+  font-weight: 500;
+}
+
+.control-buttons {
+  display: flex;
+}
+
+.control-btn {
+  border-radius: 50px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Table styling */
+.music-table {
+  color: #F5F5F5;
+  margin-bottom: 0 !important;
+}
+
+.music-table thead {
+  background: #252525;
+}
+
+.music-table th {
+  font-weight: 500;
+  color: #BBB;
+  border-bottom: 1px solid #333;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.music-table td {
+  border-color: #333;
+  vertical-align: middle;
+}
+
+/* Track display */
+.track-img-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.track-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.track-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+  color: #FFD700;
+}
+
+.track-img-container:hover .track-overlay {
+  opacity: 1;
+}
+
+.track-img-container:hover .track-img {
+  transform: scale(1.08);
+}
+
+.track-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #FFF;
+}
+
+.track-artist {
+  font-size: 0.85rem;
+  color: #BBB;
+}
+
+.genre-badge {
+  background: linear-gradient(135deg, #331E60, #4A2F8A) !important;
+  border: none;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+/* Player controls */
+.player-controls {
+  width: 100%;
+}
+
+.player-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.audio-progress-container {
+  flex-grow: 1;
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.audio-progress {
+  height: 100%;
+  width: 0%;
+  background: #FFD700;
+  transition: width 0.1s linear;
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Empty state */
+.empty-playlist {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.empty-icon {
+  color: #444;
+  margin-bottom: 1rem;
+}
+
+/* Now playing bar */
+.now-playing-bar {
+  background: linear-gradient(90deg, #331E60, #4A2F8A);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.active-track-img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.active-track-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #FFF;
+}
+
+.active-track-artist {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Active row highlighting */
+.active-row {
+  background-color: rgba(255, 215, 0, 0.05) !important;
+}
+
+/* Audio visualization */
+.playing-animation {
+  display: flex;
+  align-items: flex-end;
+  height: 20px;
+}
+
+.playing-animation span {
+  display: inline-block;
+  width: 3px;
+  background-color: #FFD700;
+  margin: 0 2px;
+  border-radius: 1px;
+  animation: equalize 1.2s infinite alternate;
+}
+
+.playing-animation span:nth-child(1) {
+  height: 10px;
+  animation-delay: 0s;
+}
+
+.playing-animation span:nth-child(2) {
+  height: 16px;
+  animation-delay: 0.2s;
+}
+
+.playing-animation span:nth-child(3) {
+  height: 8px;
+  animation-delay: 0.4s;
+}
+
+.playing-animation span:nth-child(4) {
+  height: 12px;
+  animation-delay: 0.6s;
+}
+
+.playing-animation span:nth-child(5) {
+  height: 5px;
+  animation-delay: 0.8s;
+}
+
+@keyframes equalize {
+  0% {
+    height: 5px;
+  }
+  100% {
+    height: 20px;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .control
