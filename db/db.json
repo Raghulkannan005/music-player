@@ -1,7 +1,7 @@
 {
   "items": [
     {
-      "id": 1,
+      "id": "1",
       "title": "Bol Do Na Zara",
       "singer": "Armaan Malik",
       "genre": "Romantic",
@@ -9,7 +9,7 @@
       "songUrl": "Songs/Bol Do Na Zara.mp3"
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "Chaleya",
       "singer": "Arijit Singh",
       "genre": "Romantic",
@@ -17,7 +17,7 @@
       "songUrl": "Songs/chaleya.mp3"
     },
     {
-      "id": 3,
+      "id": "3",
       "title": "Humnava Mere",
       "singer": "Jubin Nautiyal",
       "genre": "Romantic",
@@ -25,7 +25,7 @@
       "songUrl": "Songs/Humnava Mere.mp3"
     },
     {
-      "id": 4,
+      "id": "4",
       "title": "Saari Duniya Jalaa Denge",
       "singer": "B Praak",
       "genre": "Emotional",
@@ -33,7 +33,7 @@
       "songUrl": "Songs/Saari Duniya Jalaa Denge.mp3"
     },
     {
-      "id": 5,
+      "id": "5",
       "title": "Sanam Teri Kasam",
       "singer": "Ankit Tiwari",
       "genre": "Emotional",
@@ -41,7 +41,7 @@
       "songUrl": "Songs/Sanam Teri Kasam.mp3"
     },
     {
-      "id": 6,
+      "id": "6",
       "title": "zihal-e-misk",
       "singer": "Shreya Ghoshal",
       "genre": "Emotional",
@@ -57,19 +57,10 @@
       "genre": "Emotional",
       "songUrl": "Songs/Saari Duniya Jalaa Denge.mp3",
       "singer": "B Praak",
-      "id": 6
+      "id": "6"
     }
   ],
   "playlist": [
-    {
-      "itemId": 4,
-      "title": "Saari Duniya Jalaa Denge",
-      "imgUrl": "https://c.saavncdn.com/623/Saari-Duniya-Jalaa-Denge-From-ANIMAL-Hindi-2023-20231124191004-500x500.jpg",
-      "genre": "Emotional",
-      "songUrl": "Songs/Saari Duniya Jalaa Denge.mp3",
-      "singer": "B Praak",
-      "id": 6
-    },
     {
       "itemId": 2,
       "title": "Chaleya",
@@ -77,7 +68,7 @@
       "genre": "Romantic",
       "songUrl": "Songs/chaleya.mp3",
       "singer": "Arijit Singh",
-      "id": 7
+      "id": "7"
     },
     {
       "id": "543a",
